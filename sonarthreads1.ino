@@ -1,10 +1,49 @@
-/* Basic Multi Threading Arduino Example
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
+/* Porter:
+ 18, 19, 21, 22, 23, 25, 26, 27,};
+// 21, 22, 23, 25, 26, 27,18,19};
 */
 // Please read file README.md in the folder containing this example.
+
+
+
+
+
+
+// 40kHz parameters
+const int pin = 18;
+const uint16_t frequency = 40000;          // 40kHz
+const uint16_t burstDurationMicros = 500;  // 0.5 ms burst (example)
+unsigned long periodMicros = 1000000UL / frequency;
+unsigned long halfPeriod = periodMicros / 2;
+unsigned long elapsed = 0;
+
+// Function to generate a 40kHz tone burst
+void generateToneBurst(uint8_t pin, uint16_t frequency, uint16_t durationMicros) {
+  unsigned long periodMicros = 1000000UL / frequency;
+  unsigned long halfPeriod = periodMicros / 2;
+  unsigned long elapsed = 0;
+const uint16_t duty = 50;
+  while (elapsed < durationMicros) {
+  digitalWrite(pin, HIGH);
+  delayMicroseconds(periodMicros*duty/100);
+  digitalWrite(pin, LOW);
+  delayMicroseconds(periodMicros*(100-duty)/100);
+  elapsed += periodMicros;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #if CONFIG_FREERTOS_UNICORE
 #define TASK_RUNNING_CORE 0
@@ -28,11 +67,11 @@ struct TaskParams {
   const char *navn;
 };
 
-static TaskParams params = { 42, 500,50, 60, "Navn" };
+static TaskParams params = { 42, 500, 50, 60, "Navn" };
 
 
 
-int offset=500;
+int offset = 500;
 
 
 
@@ -46,40 +85,51 @@ TaskHandle_t taskhandle;               // You can (don't have to) use this to be
 void setup() {
   // Initialize serial communication at 115200 bits per second:
   Serial.begin(115200);
+  pinMode(18,OUTPUT);
+  Serial.println('halfPeriod',halfPeriod);
   // Set up two tasks to run independently.
-  uint32_t blink_delay = 1000;  // Delay between changing state on LED pin
+  // uint32_t blink_delay = 1000;  // Delay between changing state on LED pin
 
-  static TaskParams params1 = { 25, offset,50, 60, "task1" };
+  static TaskParams params1 = { 18, offset, 50, 60, "task1" };
   xTaskCreate(Task1, "Task11", 2048, &params1, 2, NULL);
 
-  static TaskParams params2 = { 26, offset,100, 60, "task2" };
+  static TaskParams params2 = { 19, offset, 60, 60, "task2" };
   xTaskCreate(Task1, "Task12", 2048, &params2, 2, NULL);
 
-  static TaskParams params3 = { 27, offset,150, 60, "task3" };
+  static TaskParams params3 = { 21, offset, 70, 60, "task3" };
   xTaskCreate(Task1, "Task13", 2048, &params3, 2, NULL);
 
-  static TaskParams params4 = { 27, offset,150, 60, "task4" };
+  static TaskParams params4 = { 22, offset, 150, 60, "task4" };
   xTaskCreate(Task1, "Task13", 2048, &params4, 2, NULL);
 
-    static TaskParams params5 = { 27,offset, 150, 60, "task5" };
+  static TaskParams params5 = { 23, offset, 150, 60, "task5" };
   xTaskCreate(Task1, "Task13", 2048, &params5, 2, NULL);
 
-    static TaskParams params6 = { 27, offset,150, 60, "task6" };
+  static TaskParams params6 = { 25, offset, 150, 60, "task6" };
   xTaskCreate(Task1, "Task13", 2048, &params6, 2, NULL);
 
-    static TaskParams params7 = { 27, offset,150, 60, "task7" };
+  static TaskParams params7 = { 26, offset, 150, 60, "task7" };
   xTaskCreate(Task1, "Task13", 2048, &params7, 2, NULL);
 
-    static TaskParams params8 = { 27, offset,150, 60, "task8" };
+  static TaskParams params8 = { 27, offset, 150, 60, "task8" };
   xTaskCreate(Task1, "Task13", 2048, &params8, 2, NULL);
 
-  Serial.println("Basic Multi Threading Arduino Example\n");
+  // Serial.println("Basic Multi Threading Arduino Example\n");
   // Now the task scheduler, which takes over control of scheduling individual tasks, is automatically started.
 }
 
 void loop() {
-  // if (analog_read_task_handle != NULL) {  // Make sure that the task actually exists
-  //   delay(10000);
+//   delay(10);
+//   digitalWrite(pin, HIGH);
+//   // delayMicroseconds(halfPeriod);
+//  delay(100);
+//   digitalWrite(pin, LOW);
+//   delayMicroseconds(halfPeriod);
+
+   // generateToneBurst(18, frequency, burstDurationMicros);
+  //   vTaskDelay(pdMS_TO_TICKS(100));  // Wait 100ms before next burst
+  // // if (analog_read_task_handle != NULL) {  // Make sure that the task actually exists
+  //   delay(500);
   //   vTaskDelete(analog_read_task_handle);  // Delete task
   //   analog_read_task_handle = NULL;        // prevent calling vTaskDelete on non-existing task
   // }
@@ -92,10 +142,11 @@ void Task1(void *pvParameters) {  // This is a task.
   Serial.println("task start...");
   Serial.println(data->port);
   Serial.println(data->offset);
- Serial.println(data->fase);
+  Serial.println(data->fase);
   Serial.println(data->apml);
   Serial.println(data->navn);
   pinMode(data->port, OUTPUT);
+  digitalWrite(data->port, LOW);
   for (;;) {
     // Serial.print("task start...");
     // Serial.print(data->port);
@@ -104,11 +155,13 @@ void Task1(void *pvParameters) {  // This is a task.
     // Serial.print(" : ");
     // Serial.print(data->apml);
     // Serial.print(" : ");
-     Serial.println(data->navn);
-
-    digitalWrite(data->port, HIGH);  // turn the LED on (HIGH is the voltage level)
-    vTaskDelay(data->offset+data->fase);
-    digitalWrite(data->port, LOW);  // turn the LED off by making the voltage LOW
-   // vTaskDelay(500);
+    Serial.println(data->navn);
+    vTaskDelay(data->offset + data->fase);
+    generateToneBurst(data->port, frequency, burstDurationMicros);
+   // vTaskDelay(pdMS_TO_TICKS(100));  // Wait 100ms before next burst
+  // digitalWrite(data->port, HIGH);  // turn the LED on (HIGH is the voltage level)
+    vTaskDelay(10);
+   // digitalWrite(data->port, LOW);  // turn the LED off by making the voltage LOW
+  //  vTaskDelay(500);
   }
 }
