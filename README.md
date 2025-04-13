@@ -5,3 +5,5 @@ Denne rutinen styrer 8 tråder i Arduino for å kontrollere Phased array og Beam
 Burst på alle kanaler (8 stk), er synkrionisert.
 
 Men ingen 40khz burst. Ingen offset satt.
+
+kk
