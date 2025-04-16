@@ -6,4 +6,4 @@ Burst på alle kanaler (8 stk), er synkrionisert.
 
 Men ingen 40khz burst. Ingen offset satt.
 
-kk
+Burst og puls ikke synkronisert. fase offest virker ikke.
