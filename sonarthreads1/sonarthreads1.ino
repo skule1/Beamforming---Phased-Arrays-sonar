@@ -1,4 +1,4 @@
-
+const int pwmFreq = 40000;  // PWM frequency
 #if CONFIG_FREERTOS_UNICORE
 #define TASK_RUNNING_CORE 0
 #else
@@ -113,7 +113,7 @@ TaskHandle_t TaskHandle6 = NULL;
 TaskHandle_t TaskHandle7 = NULL;
 TaskHandle_t TaskHandle8 = NULL;
 
-int offset = 50;
+int offset = 100;
 TaskHandle_t bursthandle1 = nullptr;
 TaskHandle_t bursthandle2 = nullptr;
 TaskHandle_t bursthandle3 = nullptr;
@@ -128,7 +128,7 @@ TaskHandle_t taskhandle;               // You can (don't have to) use this to be
 // The setup function runs once when you press reset or power on the board.
 void setup() {
 
-  pinMode(18, OUTPUT);
+  //pinMode(18, OUTPUT);
   //  pinMode(16, OUTPUT);
   //  pinMode(12, OUTPUT);
   //  pinMode(23, OUTPUT);
@@ -160,26 +160,26 @@ void setup() {
   static TaskParams params1 = { 18, offset, 0, 50, "task1" };
   xTaskCreate(Task, "Task1", 2048, &params1, 2, &TaskHandle1);
 
-  static TaskParams params2 = { 19, offset, 0, 50, "task2" };
+  static TaskParams params2 = { 19, offset, 10, 50, "task2" };
   xTaskCreate(Task, "Task2", 2048, &params2, 2, &TaskHandle2);
 
-  static TaskParams params3 = { 21, offset, 0, 50, "task3" };
+  static TaskParams params3 = { 21, offset, -10, 50, "task3" };
   xTaskCreate(Task, "Task3", 2048, &params3, 2, &TaskHandle3);
 
   static TaskParams params4 = { 22, offset, 0, 50, "task4" };
   xTaskCreate(Task, "Task4", 2048, &params4, 2, &TaskHandle4);
 
-  static TaskParams params5 = { 23, offset, 0, 50, "task5" };
-  xTaskCreate(Task, "Task5", 2048, &params5, 2, &TaskHandle5);
+  // static TaskParams params5 = { 23, offset, 0, 50, "task5" };
+  // xTaskCreate(Task, "Task5", 2048, &params5, 2, &TaskHandle5);
 
-  static TaskParams params6 = { 25, offset, 0, 50, "task6" };
-  xTaskCreate(Task, "Task6", 2048, &params6, 2, &TaskHandle6);
+  // static TaskParams params6 = { 25, offset, 0, 50, "task6" };
+  // xTaskCreate(Task, "Task6", 2048, &params6, 2, &TaskHandle6);
 
-  static TaskParams params7 = { 26, offset, 0, 50, "task7" };
-  xTaskCreate(Task, "Task7", 2048, &params7, 2, &TaskHandle7);
+  // static TaskParams params7 = { 26, offset, 0, 50, "task7" };
+  // xTaskCreate(Task, "Task7", 2048, &params7, 2, &TaskHandle7);
 
-  static TaskParams params8 = { 27, offset, 0, 50, "task8" };
-  xTaskCreate(Task, "Task8", 2048, &params8, 2, &TaskHandle8);
+  // static TaskParams params8 = { 27, offset, 0, 50, "task8" };
+  // xTaskCreate(Task, "Task8", 2048, &params8, 2, &TaskHandle8);
 
   // static TaskParams params1 = { 18, offset, 0, 50, "task1" };
   // xTaskCreate(childTask, "Task1", 2048, &params1, 2, &TaskHandle1);
@@ -235,15 +235,15 @@ void loop() {
   //  vTaskDelay(10);
   // xTaskNotifyGive(bursthandle1);  // Trigger Task B
   // xTaskNotifyGive(bursthandle2);  // Trigger Task B
-  xTaskNotifyGive(TaskHandle2);  // Trigger Task B
   xTaskNotifyGive(TaskHandle1);  // Trigger Task B
+  xTaskNotifyGive(TaskHandle2);  // Trigger Task B
   xTaskNotifyGive(TaskHandle3);  // Trigger Task B
   xTaskNotifyGive(TaskHandle4);  // Trigger Task B
-  // xTaskNotifyGive(TaskHandle5);  // Trigger Task B
-  // xTaskNotifyGive(TaskHandle6);  // Trigger Task B
-  // xTaskNotifyGive(TaskHandle7);  // Trigger Task B
-  // xTaskNotifyGive(TaskHandle8);  // Trigger Task B
- delay(100);
+                                 // xTaskNotifyGive(TaskHandle5);  // Trigger Task B
+                                 // xTaskNotifyGive(TaskHandle6);  // Trigger Task B
+                                 // xTaskNotifyGive(TaskHandle7);  // Trigger Task B
+                                 // xTaskNotifyGive(TaskHandle8);  // Trigger Task B
+  delay(300);
   //   digitalWrite(pin, HIGH);
   //   // delayMicroseconds(halfPeriod);
   //  delay(100);
@@ -285,11 +285,18 @@ void Task(void *pvParameters) {
   Serial.print(" : ");
   Serial.print(data->port);
   Serial.print(" : ");
-  // Serial.print("data->offset ");
-  Serial.print(data->offset);
-  Serial.print(" : ");
-  // Serial.print("data->fase ");
-  Serial.println(data->fase);
+    Serial.print("  data->fase");
+    Serial.print("  :  ");
+    Serial.print(data->fase);
+    Serial.print("  data->offset + data->fase");
+    Serial.print("  :  ");
+    Serial.print(data->offset + data->fase);
+    // Serial.print("  halfPeriod");
+    // Serial.print("  :  ");
+    // Serial.print(halfPeriod);
+    Serial.print(" 100-(data->offset + data->fase)");
+    Serial.print("  :  ");
+    Serial.println(100 - (data->offset + data->fase));
 
   //  Serial.println(data1->burst);
 
@@ -297,20 +304,35 @@ void Task(void *pvParameters) {
   pinMode(data->port, OUTPUT);
   digitalWrite(data->port, LOW);
   while (true) {
-    vTaskDelay(data->offset + data->fase);
+
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     // Serial.print("childTask");
     // Serial.print("  :  ");
-    // Serial.println(data->port);
-    // Serial.print("burstDurationMicros");
+    // Serial.print(data->port);
+    // Serial.print("  data->fase");
     // Serial.print("  :  ");
-    // Serial.println(burstDurationMicros);
-    // Serial.print("halfPeriod");
+    // Serial.print(data->fase);
+    // Serial.print("  data->offset + data->fase");
     // Serial.print("  :  ");
-    // Serial.println(halfPeriod);
-    digitalWrite(data->port, HIGH);
+    // Serial.print(data->offset + data->fase);
+    // // Serial.print("  halfPeriod");
+    // // Serial.print("  :  ");
+    // // Serial.print(halfPeriod);
+    // Serial.print(" 100-(data->offset + data->fase)");
+    // Serial.print("  :  ");
+    // Serial.println(100 - (data->offset + data->fase));
+       digitalWrite(data->port, HIGH);
     delay(1);
-    digitalWrite(data->port, LOW);
+     digitalWrite(data->port, LOW);
+   //if (data->port!=18) 
+   vTaskDelay(data->offset + data->fase);
+
+    analogWrite(data->port, 128);
+  //  digitalWrite(data->port, HIGH);
+    delay(5);
+    analogWrite(data->port, 0);
+    // digitalWrite(data->port, LOW);
+   //   if (data->port!=18)  vTaskDelay(100 - (data->offset + data->fase));
     // delay(1);
     // unsigned long elapsed = 0;
 
@@ -323,7 +345,7 @@ void Task(void *pvParameters) {
     //   delayMicroseconds(halfPeriod);
     //   elapsed += periodMicros;
     // }
-      // vTaskDelay(100-(data->offset + data->fase));
+    // vTaskDelay(100-(data->offset + data->fase));
   }
 }
 
